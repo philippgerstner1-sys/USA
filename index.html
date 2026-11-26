@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>USA 2026</title>
+<style>
+  body{margin:0;background:#000;color:#fff;font-family:sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh}
+  video{width:100%;max-height:100vh;display:none}
+  #ton{display:none;position:fixed;bottom:2em;left:50%;transform:translateX(-50%);font-size:1.3em;padding:.7em 1.4em;border:0;border-radius:2em;background:#fff;color:#000}
+</style>
+</head>
+<body>
+<p id="info">Video wird geladen …</p>
+<video id="v" playsinline controls></video>
+<button id="ton">🔊 Ton an</button>
+<script>
+  // YouTube-Link hier eintragen (gilt nur, solange keine video.mp4 hochgeladen ist):
+  var YOUTUBE = "https://www.youtube.com/watch?v=4uX29-Di4Og";
+
+  fetch("video.mp4", {method: "HEAD"}).then(function (r) {
+    if (r.ok) {
+      var v = document.getElementById("v"), ton = document.getElementById("ton");
+      document.getElementById("info").style.display = "none";
+      v.src = "video.mp4"; v.style.display = "block";
+      v.play().catch(function () {           // mit Ton blockiert -> stumm starten
+        v.muted = true; v.play(); ton.style.display = "block";
+      });
+      ton.onclick = function () { v.muted = false; v.play(); ton.style.display = "none"; };
+    } else if (YOUTUBE) {
+      location.replace(YOUTUBE);
+    } else {
+      document.getElementById("info").textContent = "Das Video ist bald hier zu sehen.";
+    }
+  });
+</script>
+</body>
+</html>
