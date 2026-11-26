@@ -5,34 +5,55 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>USA 2026</title>
 <style>
-  body{margin:0;background:#000;color:#fff;font-family:sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh}
-  video{width:100%;max-height:100vh;display:none}
-  #ton{display:none;position:fixed;bottom:2em;left:50%;transform:translateX(-50%);font-size:1.3em;padding:.7em 1.4em;border:0;border-radius:2em;background:#fff;color:#000}
+  html,body{margin:0;height:100%;background:#000;color:#fff;font-family:sans-serif}
+  #start{position:fixed;inset:0;width:100%;border:0;background:#000;color:#fff;font-size:1.4em;
+         display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5em}
+  #start span{font-size:4em;line-height:1}
+  #start:disabled{opacity:.4}
+  video,iframe{position:fixed;inset:0;width:100%;height:100%;border:0;background:#000;display:none}
 </style>
 </head>
 <body>
-<p id="info">Video wird geladen …</p>
+<button id="start" disabled><span>▶</span>USA 2026<br>Video abspielen</button>
 <video id="v" playsinline controls></video>
-<button id="ton">🔊 Ton an</button>
+<iframe id="yt" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen></iframe>
 <script>
-  // YouTube-Link hier eintragen (gilt nur, solange keine video.mp4 hochgeladen ist):
+  // YouTube-Link (gilt nur, solange keine video.mp4 hochgeladen ist):
   var YOUTUBE = "https://www.youtube.com/watch?v=4uX29-Di4Og";
 
+  var btn = document.getElementById("start"), v = document.getElementById("v"),
+      yt = document.getElementById("yt"), modus = "";
+
+  function vollbild(el) {
+    try {
+      var p = el.requestFullscreen ? el.requestFullscreen()
+            : el.webkitRequestFullscreen ? el.webkitRequestFullscreen()
+            : el.webkitEnterFullscreen ? el.webkitEnterFullscreen() : null;
+      if (p && p.catch) p.catch(function () {});
+    } catch (e) {}
+  }
+  function ytId(u) {
+    var m = u.match(/(?:youtu\.be\/|v=|shorts\/|embed\/)([\w-]{11})/);
+    return m ? m[1] : "";
+  }
+
   fetch("video.mp4", {method: "HEAD"}).then(function (r) {
-    if (r.ok) {
-      var v = document.getElementById("v"), ton = document.getElementById("ton");
-      document.getElementById("info").style.display = "none";
-      v.src = "video.mp4"; v.style.display = "block";
-      v.play().catch(function () {           // mit Ton blockiert -> stumm starten
-        v.muted = true; v.play(); ton.style.display = "block";
-      });
-      ton.onclick = function () { v.muted = false; v.play(); ton.style.display = "none"; };
-    } else if (YOUTUBE) {
-      location.replace(YOUTUBE);
-    } else {
-      document.getElementById("info").textContent = "Das Video ist bald hier zu sehen.";
-    }
+    if (r.ok) { modus = "datei"; v.src = "video.mp4"; v.preload = "auto"; }
+    else if (ytId(YOUTUBE)) { modus = "youtube"; }
+    else { btn.innerHTML = "Das Video ist bald hier zu sehen."; return; }
+    btn.disabled = false;
   });
+
+  btn.onclick = function () {
+    btn.style.display = "none";
+    if (modus === "datei") {
+      v.style.display = "block"; v.play(); vollbild(v);
+    } else {
+      yt.src = "https://www.youtube-nocookie.com/embed/" + ytId(YOUTUBE) +
+               "?autoplay=1&rel=0&playsinline=0";
+      yt.style.display = "block"; vollbild(document.documentElement);
+    }
+  };
 </script>
 </body>
 </html>
